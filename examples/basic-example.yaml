@@ -1,0 +1,161 @@
+# Clash 配置示例 - 基础用法
+
+# ========================================
+# 这是一个完整的 Clash 配置示例
+# 展示如何使用 Parsers 功能添加住宅代理
+# ========================================
+
+port: 7890
+socks-port: 7891
+allow-lan: true
+mode: Rule
+log-level: info
+external-controller: :9090
+
+# ========================================
+# Parsers 配置 - 关键部分
+# ========================================
+parsers:
+  - url: https://your-subscription-url.com/clash
+    code: |
+      /**
+       * Clash 配置文件预处理脚本 - 家宽代理前置路由
+       * 版本: v1.0.0
+       */
+
+      const main = (config) => {
+        // ================= 配置区域 =================
+        const CONFIG = {
+          residentialProxy: {
+            name: "🏠 美国住宅代理",
+            type: "http",
+            server: "proxy.example.com",
+            port: 443,
+            username: "your_username",
+            password: "your_password",
+            udp: true,
+            tls: false,
+            skipCertVerify: true,
+            dialerProxy: "🇺🇸 家宽前置路由"
+          },
+          relayGroupName: "🇺🇸 家宽前置路由",
+          sourceGroupName: "Proxies",
+          targetGroups: ["Proxies", "Netflix", "AI", "TikTok", "DisneyPlus", "HBO", "YouTube", "✈️Final"],
+          excludeNodes: ["DIRECT", "REJECT", "🎯Direct"]
+        };
+
+        // ================= 日志函数 =================
+        const log = {
+          info: (msg) => console.log(`✅ ${msg}`),
+          warn: (msg) => console.log(`⚠️  ${msg}`),
+          error: (msg) => console.error(`❌ ${msg}`)
+        };
+
+        // ================= 数据校验 =================
+        if (!config || typeof config !== 'object') {
+          log.error("配置对象无效");
+          return config;
+        }
+
+        if (!config.proxies) config.proxies = [];
+        if (!config['proxy-groups']) config['proxy-groups'] = [];
+
+        if (!Array.isArray(config.proxies) || !Array.isArray(config['proxy-groups'])) {
+          log.error("proxies 或 proxy-groups 格式错误");
+          return config;
+        }
+
+        // ================= 检查重复 =================
+        const existingProxy = config.proxies.find(p => p.name === CONFIG.residentialProxy.name);
+        if (existingProxy) {
+          log.warn("家宽代理已存在，跳过添加");
+          return config;
+        }
+
+        // ================= 提取节点列表 =================
+        const sourceGroup = config['proxy-groups'].find(g => g.name === CONFIG.sourceGroupName);
+        if (!sourceGroup) {
+          log.error(`找不到源策略组: ${CONFIG.sourceGroupName}`);
+          return config;
+        }
+
+        if (!sourceGroup.proxies || !Array.isArray(sourceGroup.proxies)) {
+          log.error(`源策略组 ${CONFIG.sourceGroupName} 没有有效的 proxies 字段`);
+          return config;
+        }
+
+        const excludeSet = new Set([...CONFIG.excludeNodes, CONFIG.residentialProxy.name]);
+        const availableNodes = (sourceGroup.proxies || []).filter(p => !excludeSet.has(p));
+
+        if (availableNodes.length === 0) {
+          log.warn("没有可用的节点，仅添加 DIRECT 选项");
+        }
+
+        log.info(`提取到 ${availableNodes.length} 个可用节点`);
+
+        // ================= 创建/更新影子策略组 =================
+        const existingRelayGroup = config['proxy-groups'].find(g => g.name === CONFIG.relayGroupName);
+        const relayGroup = {
+          name: CONFIG.relayGroupName,
+          type: "select",
+          proxies: ["DIRECT", ...availableNodes]
+        };
+
+        if (existingRelayGroup) {
+          log.warn("影子策略组已存在，更新节点列表");
+          Object.assign(existingRelayGroup, relayGroup);
+        } else {
+          config['proxy-groups'].unshift(relayGroup);
+          log.info(`创建影子策略组: ${CONFIG.relayGroupName}`);
+        }
+
+        // ================= 创建家宽代理节点 =================
+        const residentialProxy = {
+          name: CONFIG.residentialProxy.name,
+          type: CONFIG.residentialProxy.type,
+          server: CONFIG.residentialProxy.server,
+          port: CONFIG.residentialProxy.port,
+          username: CONFIG.residentialProxy.username,
+          password: CONFIG.residentialProxy.password,
+          udp: CONFIG.residentialProxy.udp,
+          tls: CONFIG.residentialProxy.tls,
+          "skip-cert-verify": CONFIG.residentialProxy.skipCertVerify,
+          "dialer-proxy": CONFIG.residentialProxy.dialerProxy
+        };
+
+        config.proxies.unshift(residentialProxy);
+        log.info(`添加家宽代理: ${CONFIG.residentialProxy.name}`);
+
+        // ================= 添加到目标策略组 =================
+        const targetGroupSet = new Set(CONFIG.targetGroups);
+        let addedCount = 0;
+
+        config['proxy-groups'].forEach(group => {
+          if (targetGroupSet.has(group.name)) {
+            if (!group.proxies) group.proxies = [];
+            if (!group.proxies.includes(residentialProxy.name)) {
+              group.proxies.unshift(residentialProxy.name);
+              addedCount++;
+            }
+          }
+        });
+
+        log.info(`已将家宽代理添加到 ${addedCount} 个策略组`);
+
+        // ================= 完成 =================
+        log.info("配置处理完成");
+
+        return config;
+      };
+
+# ========================================
+# 使用说明
+# ========================================
+# 
+# 1. 将此文件保存为 clash_config.yaml
+# 2. 修改 parsers 中的订阅链接
+# 3. 修改代理配置（server, port, username, password）
+# 4. 在 Clash 客户端中导入此配置
+# 5. 更新订阅后即可使用
+#
+# ========================================

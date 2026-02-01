@@ -1,0 +1,70 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Generated Files
+*.log
+*.tmp
+*.temp
+dist/
+build/
+output/
+residential_proxy_full_*.js
+residential_proxy_simple_*.js
+
+# Personal Configuration Files
+config.local.json
+*.private.json
+.env
+.env.local
+
+# Test Files
+test-output/
+coverage/
+.nyc_output/
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# macOS
+.AppleDouble
+.LSOverride
+
+# Windows
+$RECYCLE.BIN/
+
+# Linux
+.directory
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z

@@ -1,0 +1,80 @@
+{
+  "comment": "Clash 家宽代理配置模板 - 修改此文件后可直接生成脚本",
+  "version": "1.0.0",
+  "generatedAt": "2025-01-31",
+  
+  "proxy": {
+    "name": "🏠 美国住宅代理",
+    "type": "http",
+    "server": "proxy.example.com",
+    "port": 443,
+    "username": "your_username",
+    "password": "your_password",
+    "udp": true,
+    "tls": false,
+    "skipCertVerify": true
+  },
+  
+  "settings": {
+    "relayGroupName": "🇺🇸 家宽前置路由",
+    "sourceGroupName": "Proxies",
+    "targetGroups": [
+      "Proxies",
+      "Netflix",
+      "AI",
+      "TikTok",
+      "DisneyPlus",
+      "HBO",
+      "YouTube",
+      "✈️Final"
+    ],
+    "excludeNodes": [
+      "DIRECT",
+      "REJECT",
+      "🎯Direct"
+    ]
+  },
+  
+  "scriptOptions": {
+    "version": "full",
+    "enableLogging": true,
+    "enableValidation": true,
+    "enableDuplicateCheck": true
+  },
+  
+  "presets": {
+    "residential": {
+      "name": "🏠 住宅代理",
+      "server": "proxy.example.com",
+      "port": 443,
+      "type": "http"
+    },
+    "datacenter": {
+      "name": "🏢 数据中心",
+      "server": "1.2.3.4",
+      "port": 8080,
+      "type": "http"
+    },
+    "socks5": {
+      "name": "🔐 SOCKS5 代理",
+      "server": "127.0.0.1",
+      "port": 1080,
+      "type": "socks5"
+    }
+  },
+  
+  "instructions": {
+    "zh": {
+      "step1": "修改 proxy 部分的配置信息",
+      "step2": "根据需要调整 targetGroups 策略组列表",
+      "step3": "选择 scriptOptions.version (full 或 simple)",
+      "step4": "使用配置生成器生成最终脚本"
+    },
+    "en": {
+      "step1": "Modify proxy configuration",
+      "step2": "Adjust targetGroups as needed",
+      "step3": "Choose scriptOptions.version (full or simple)",
+      "step4": "Use generator to create final script"
+    }
+  }
+}

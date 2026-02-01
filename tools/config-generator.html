@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash 家宽代理配置生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .advanced-toggle {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.3s;
+        }
+
+        .advanced-toggle:hover {
+            background: #ebebeb;
+        }
+
+        .advanced-toggle span {
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .advanced-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .advanced-section.show {
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-copy {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #38a169;
+        }
+
+        .btn-reset {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-reset:hover {
+            background: #d0d0d0;
+        }
+
+        .output-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .output-section.show {
+            display: block;
+        }
+
+        .output-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .output-header h2 {
+            color: #333;
+            font-size: 18px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            background: #5568d3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🏠 Clash 家宽代理配置生成器</h1>
+        <p class="subtitle">快速生成您的专属 Clash 预处理脚本</p>
+
+        <!-- 预设模板 -->
+        <div class="preset-buttons">
+            <button class="preset-btn" onclick="loadPreset('residential')">📍 住宅代理模板</button>
+            <button class="preset-btn" onclick="loadPreset('datacenter')">🏢 数据中心模板</button>
+            <button class="preset-btn" onclick="loadPreset('current')">✨ 当前配置</button>
+        </div>
+
+        <form id="configForm">
+            <!-- 基础配置 -->
+            <div class="form-group">
+                <label>代理名称 <span class="required">*</span></label>
+                <input type="text" id="proxyName" value="🏠 美国住宅代理" required>
+                <div class="hint">显示在节点列表中的名称，可使用 emoji</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>服务器地址 <span class="required">*</span></label>
+                    <input type="text" id="server" value="proxy.example.com" placeholder="例如: 1.2.3.4" required>
+                </div>
+                <div class="form-group">
+                    <label>端口 <span class="required">*</span></label>
+                    <input type="number" id="port" value="443" min="1" max="65535" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>用户名 <span class="required">*</span></label>
+                    <input type="text" id="username" value="your_username" required>
+                </div>
+                <div class="form-group">
+                    <label>密码 <span class="required">*</span></label>
+                    <input type="text" id="password" value="your_password" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>代理类型</label>
+                    <select id="proxyType">
+                        <option value="http">HTTP</option>
+                        <option value="https">HTTPS</option>
+                        <option value="socks5">SOCKS5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>影子策略组名称</label>
+                    <input type="text" id="relayGroupName" value="🇺🇸 家宽前置路由">
+                </div>
+            </div>
+
+            <!-- 高级配置 -->
+            <div class="advanced-toggle" onclick="toggleAdvanced()">
+                <span>⚙️ 高级配置</span>
+                <span id="advancedIcon">▼</span>
+            </div>
+
+            <div class="advanced-section" id="advancedSection">
+                <div class="form-group">
+                    <label>目标策略组</label>
+                    <input type="text" id="targetGroups"
+                        value="Proxies, Netflix, AI, TikTok, DisneyPlus, HBO, YouTube, ✈️Final">
+                    <div class="hint">用逗号分隔，例如: Proxies, Netflix, AI</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="udp" checked> 启用 UDP
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="tls"> 启用 TLS
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="skipCertVerify" checked> 跳过证书验证
+                    </label>
+                    <div class="hint">不安全的网络环境下建议开启</div>
+                </div>
+
+                <div class="form-group">
+                    <label>脚本版本</label>
+                    <select id="scriptVersion">
+                        <option value="full">完整版（推荐）</option>
+                        <option value="simple">精简版</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 按钮组 -->
+            <div class="button-group">
+                <button type="button" class="btn-generate" onclick="generateConfig()">🚀 生成配置</button>
+                <button type="button" class="btn-copy" onclick="copyToClipboard()" id="copyBtn" disabled>📋
+                    复制代码</button>
+                <button type="button" class="btn-reset" onclick="resetForm()">🔄 重置</button>
+            </div>
+        </form>
+
+        <!-- 输出区域 -->
+        <div class="output-section" id="outputSection">
+            <div class="output-header">
+                <h2>✨ 生成的配置脚本</h2>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('script')">JavaScript 脚本</div>
+                <div class="tab" onclick="switchTab('yaml')">YAML 配置示例</div>
+            </div>
+
+            <div id="scriptTab">
+                <pre class="code-block" id="outputCode"></pre>
+            </div>
+
+            <div id="yamlTab" style="display: none;">
+                <pre class="code-block" id="yamlCode"></pre>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                ✅ 已复制到剪贴板！
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'script';
+        let generatedScript = '';
+
+        // 切换高级配置
+        function toggleAdvanced() {
+            const section = document.getElementById('advancedSection');
+            const icon = document.getElementById('advancedIcon');
+            section.classList.toggle('show');
+            icon.textContent = section.classList.contains('show') ? '▲' : '▼';
+        }
+
+        // 切换标签页
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('scriptTab').style.display = tab === 'script' ? 'block' : 'none';
+            document.getElementById('yamlTab').style.display = tab === 'yaml' ? 'block' : 'none';
+        }
+
+        // 加载预设模板
+        function loadPreset(type) {
+            const presets = {
+                residential: {
+                    proxyName: '🏠 美国住宅代理',
+                    server: 'proxy.example.com',
+                    port: 443,
+                    username: 'your_username',
+                    password: 'your_password',
+                    proxyType: 'http',
+                    relayGroupName: '🇺🇸 家宽前置路由'
+                },
+                datacenter: {
+                    proxyName: '🏢 数据中心代理',
+                    server: '1.2.3.4',
+                    port: 8080,
+                    username: 'user',
+                    password: 'pass',
+                    proxyType: 'http',
+                    relayGroupName: '🌐 数据中心前置'
+                },
+                current: {
+                    proxyName: '🏠 美国住宅代理',
+                    server: 'proxy.example.com',
+                    port: 443,
+                    username: 'your_username',
+                    password: 'your_password',
+                    proxyType: 'http',
+                    relayGroupName: '🇺🇸 家宽前置路由'
+                }
+            };
+
+            const preset = presets[type];
+            if (preset) {
+                Object.keys(preset).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) element.value = preset[key];
+                });
+            }
+        }
+
+        // 生成配置
+        function generateConfig() {
+            const config = {
+                proxyName: document.getElementById('proxyName').value,
+                server: document.getElementById('server').value,
+                port: parseInt(document.getElementById('port').value),
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                proxyType: document.getElementById('proxyType').value,
+                relayGroupName: document.getElementById('relayGroupName').value,
+                targetGroups: document.getElementById('targetGroups').value.split(',').map(s => s.trim()),
+                udp: document.getElementById('udp').checked,
+                tls: document.getElementById('tls').checked,
+                skipCertVerify: document.getElementById('skipCertVerify').checked,
+                scriptVersion: document.getElementById('scriptVersion').value
+            };
+
+            // 生成脚本
+            generatedScript = config.scriptVersion === 'full'
+                ? generateFullScript(config)
+                : generateSimpleScript(config);
+
+            document.getElementById('outputCode').textContent = generatedScript;
+
+            // 生成 YAML 示例
+            const yamlExample = generateYamlExample(config);
+            document.getElementById('yamlCode').textContent = yamlExample;
+
+            // 显示输出区域
+            document.getElementById('outputSection').classList.add('show');
+            document.getElementById('copyBtn').disabled = false;
+
+            // 滚动到输出区域
+            document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 生成完整版脚本
+        function generateFullScript(config) {
+            const targetGroupsStr = config.targetGroups.map(g => `"${g}"`).join(', ');
+
+            return `/**
+ * Clash 配置文件预处理脚本 - 家宽代理前置路由
+ * 版本: v1.0.0
+ * 生成时间: ${new Date().toLocaleString('zh-CN')}
+ */
+
+const main = (config) => {
+  // ================= 配置区域 =================
+  const CONFIG = {
+    residentialProxy: {
+      name: "${config.proxyName}",
+      type: "${config.proxyType}",
+      server: "${config.server}",
+      port: ${config.port},
+      username: "${config.username}",
+      password: "${config.password}",
+      udp: ${config.udp},
+      tls: ${config.tls},
+      skipCertVerify: ${config.skipCertVerify},
+      dialerProxy: "${config.relayGroupName}"
+    },
+    relayGroupName: "${config.relayGroupName}",
+    sourceGroupName: "Proxies",
+    targetGroups: [${targetGroupsStr}],
+    excludeNodes: ["DIRECT", "REJECT", "🎯Direct"]
+  };
+
+  // ================= 日志函数 =================
+  const log = {
+    info: (msg) => console.log(\`✅ \${msg}\`),
+    warn: (msg) => console.log(\`⚠️  \${msg}\`),
+    error: (msg) => console.error(\`❌ \${msg}\`)
+  };
+
+  // ================= 数据校验 =================
+  if (!config || typeof config !== 'object') {
+    log.error("配置对象无效");
+    return config;
+  }
+
+  if (!config.proxies) config.proxies = [];
+  if (!config['proxy-groups']) config['proxy-groups'] = [];
+
+  if (!Array.isArray(config.proxies) || !Array.isArray(config['proxy-groups'])) {
+    log.error("proxies 或 proxy-groups 格式错误");
+    return config;
+  }
+
+  // ================= 检查重复 =================
+  const existingProxy = config.proxies.find(p => p.name === CONFIG.residentialProxy.name);
+  if (existingProxy) {
+    log.warn("家宽代理已存在，跳过添加");
+    return config;
+  }
+
+  // ================= 提取节点列表 =================
+  const sourceGroup = config['proxy-groups'].find(g => g.name === CONFIG.sourceGroupName);
+  if (!sourceGroup) {
+    log.error(\`找不到源策略组: \${CONFIG.sourceGroupName}\`);
+    return config;
+  }
+
+  if (!sourceGroup.proxies || !Array.isArray(sourceGroup.proxies)) {
+    log.error(\`源策略组 \${CONFIG.sourceGroupName} 没有有效的 proxies 字段\`);
+    return config;
+  }
+
+  const excludeSet = new Set([...CONFIG.excludeNodes, CONFIG.residentialProxy.name]);
+  const availableNodes = (sourceGroup.proxies || []).filter(p => !excludeSet.has(p));
+
+  if (availableNodes.length === 0) {
+    log.warn("没有可用的节点，仅添加 DIRECT 选项");
+  }
+
+  log.info(\`提取到 \${availableNodes.length} 个可用节点\`);
+
+  // ================= 创建/更新影子策略组 =================
+  const existingRelayGroup = config['proxy-groups'].find(g => g.name === CONFIG.relayGroupName);
+  const relayGroup = {
+    name: CONFIG.relayGroupName,
+    type: "select",
+    proxies: ["DIRECT", ...availableNodes]
+  };
+
+  if (existingRelayGroup) {
+    log.warn("影子策略组已存在，更新节点列表");
+    Object.assign(existingRelayGroup, relayGroup);
+  } else {
+    config['proxy-groups'].unshift(relayGroup);
+    log.info(\`创建影子策略组: \${CONFIG.relayGroupName}\`);
+  }
+
+  // ================= 创建家宽代理节点 =================
+  const residentialProxy = {
+    name: CONFIG.residentialProxy.name,
+    type: CONFIG.residentialProxy.type,
+    server: CONFIG.residentialProxy.server,
+    port: CONFIG.residentialProxy.port,
+    username: CONFIG.residentialProxy.username,
+    password: CONFIG.residentialProxy.password,
+    udp: CONFIG.residentialProxy.udp,
+    tls: CONFIG.residentialProxy.tls,
+    "skip-cert-verify": CONFIG.residentialProxy.skipCertVerify,
+    "dialer-proxy": CONFIG.residentialProxy.dialerProxy
+  };
+
+  config.proxies.unshift(residentialProxy);
+  log.info(\`添加家宽代理: \${CONFIG.residentialProxy.name}\`);
+
+  // ================= 添加到目标策略组 =================
+  const targetGroupSet = new Set(CONFIG.targetGroups);
+  let addedCount = 0;
+
+  config['proxy-groups'].forEach(group => {
+    if (targetGroupSet.has(group.name)) {
+      if (!group.proxies) group.proxies = [];
+      if (!group.proxies.includes(residentialProxy.name)) {
+        group.proxies.unshift(residentialProxy.name);
+        addedCount++;
+      }
+    }
+  });
+
+  log.info(\`已将家宽代理添加到 \${addedCount} 个策略组\`);
+
+  // ================= 完成 =================
+  log.info("配置处理完成");
+  log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  log.info("📌 使用提示:");
+  log.info("1. 在策略组中选择 '${config.proxyName}'");
+  log.info("2. 在 '${config.relayGroupName}' 中选择前置节点:");
+  log.info("   - DIRECT: 直连（默认，适合国内访问）");
+  log.info("   - 其他节点: 使用机场节点作为前置");
+  log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+  return config;
+};`;
+        }
+
+        // 生成精简版脚本
+        function generateSimpleScript(config) {
+            const targetGroupsStr = config.targetGroups.map(g => `"${g}"`).join(', ');
+
+            return `/**
+ * Clash 家宽代理复写配置 - 精简版
+ * 生成时间: ${new Date().toLocaleString('zh-CN')}
+ */
+
+const main = (config) => {
+  const PROXY_NAME = "${config.proxyName}";
+  const RELAY_NAME = "${config.relayGroupName}";
+  
+  const residentialProxy = {
+    name: PROXY_NAME,
+    type: "${config.proxyType}",
+    server: "${config.server}",
+    port: ${config.port},
+    username: "${config.username}",
+    password: "${config.password}",
+    udp: ${config.udp},
+    tls: ${config.tls},
+    "skip-cert-verify": ${config.skipCertVerify},
+    "dialer-proxy": RELAY_NAME
+  };
+  
+  const targetGroups = [${targetGroupsStr}];
+
+  if (!config.proxies) config.proxies = [];
+  if (!config['proxy-groups']) config['proxy-groups'] = [];
+  
+  if (config.proxies.some(p => p.name === PROXY_NAME)) {
+    console.log("⚠️ 已存在，跳过");
+    return config;
+  }
+  
+  const sourceGroup = config['proxy-groups'].find(g => g.name === "Proxies");
+  if (!sourceGroup) {
+    console.error("❌ 找不到 Proxies 组");
+    return config;
+  }
+  
+  const availableNodes = (sourceGroup.proxies || []).filter(
+    p => !["DIRECT", "REJECT", "🎯Direct", PROXY_NAME].includes(p)
+  );
+  
+  const relayGroup = {
+    name: RELAY_NAME,
+    type: "select",
+    proxies: ["DIRECT", ...availableNodes]
+  };
+  
+  config['proxy-groups'].unshift(relayGroup);
+  config.proxies.unshift(residentialProxy);
+  
+  config['proxy-groups'].forEach(group => {
+    if (targetGroups.includes(group.name)) {
+      if (!group.proxies) group.proxies = [];
+      if (!group.proxies.includes(PROXY_NAME)) {
+        group.proxies.unshift(PROXY_NAME);
+      }
+    }
+  });
+  
+  console.log("✅ 配置完成");
+  return config;
+};`;
+        }
+
+        // 生成 YAML 配置示例
+        function generateYamlExample(config) {
+            const targetGroupsStr = config.targetGroups.map(g => `    - ${g}`).join('\n');
+
+            return `# Clash 配置文件中的 Parsers 配置示例
+# 将此配置添加到您的 Clash 配置文件中
+
+parsers:
+  - url: https://你的订阅链接
+    code: |
+      # 在这里粘贴上方生成的 JavaScript 脚本完整内容
+
+# ============================================
+# 或者使用外部文件方式:
+# ============================================
+
+parsers:
+  - url: https://你的订阅链接
+    file: /path/to/your/script.js
+
+# ============================================
+# 生成的代理配置预览:
+# ============================================
+
+proxies:
+  - name: ${config.proxyName}
+    type: ${config.proxyType}
+    server: ${config.server}
+    port: ${config.port}
+    username: ${config.username}
+    password: ${config.password}
+    udp: ${config.udp}
+    tls: ${config.tls}
+    skip-cert-verify: ${config.skipCertVerify}
+    dialer-proxy: ${config.relayGroupName}
+
+proxy-groups:
+  - name: ${config.relayGroupName}
+    type: select
+    proxies:
+      - DIRECT
+      - # ... 其他机场节点
+
+  # 目标策略组（会自动添加家宽代理）:
+${targetGroupsStr}`;
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard() {
+            const textToCopy = currentTab === 'script'
+                ? generatedScript
+                : document.getElementById('yamlCode').textContent;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.classList.add('show');
+
+                setTimeout(() => {
+                    successMsg.classList.remove('show');
+                }, 3000);
+            }).catch(err => {
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('configForm').reset();
+            loadPreset('current');
+            document.getElementById('outputSection').classList.remove('show');
+            document.getElementById('copyBtn').disabled = true;
+        }
+
+        // 页面加载时初始化
+        window.onload = function () {
+            loadPreset('current');
+        };
+    </script>
+</body>
+
+</html>
