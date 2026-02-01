@@ -1,5 +1,4 @@
-custom: [ 
-  'USDT(TRC20): TLRbat9JBQJGyeyYbVfWxBVp2pXiDgAQou',
-  'ETH/Polygon/X Layer: 0x078f7ef278eab6c9d195d17460de1341135c1b72', 
-  'BTC: bc1pwevv4jfleel5y30r9fwxwk9c8hzvea2nry8hh0z0n6je22qyv6cq3rlw9e'
-]
+custom:
+  - 'USDT(TRC20): TLRbat9JBQJGyeyYbVfWxBVp2pXiDgAQou'
+  - 'ETH/Polygon/X Layer: 0x078f7ef278eab6c9d195d17460de1341135c1b72'
+  - 'BTC: bc1pwevv4jfleel5y30r9fwxwk9c8hzvea2nry8hh0z0n6je22qyv6cq3rlw9e'
