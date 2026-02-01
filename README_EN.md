@@ -318,6 +318,8 @@ of this software and associated documentation files...
 
 ## 🌟 Star History
 
+[![Star History Chart](https://api.star-history.com/svg?repos=NineThoughts0521/clash-residential-proxy-parser&type=date&legend=top-left)](https://www.star-history.com/#NineThoughts0521/clash-residential-proxy-parser&type=date&legend=top-left)
+
 ---
 
 ## 🙏 Acknowledgments
