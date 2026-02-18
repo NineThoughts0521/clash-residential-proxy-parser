@@ -1,7 +1,7 @@
 /**
  * Clash 配置文件预处理脚本 - 家宽代理前置路由
- * 版本: v1.0.0
- * 功能: 添加犹他州家宽代理，支持灵活的前置路由选择
+ * 版本: v1.1.0
+ * 功能: 添加家宽代理，支持灵活的前置路由选择
  * 
  * 使用方法:
  * 1. 在 Clash 客户端中导入此脚本作为 Parser
@@ -15,14 +15,29 @@ const main = (config) => {
         // 家宽代理配置
         residentialProxy: {
             name: "🏠 美国住宅代理",
+            // 支持: http / https / socks5 / vless / vmess / ss / ss2022
             type: "http",
             server: "proxy.example.com",
             port: 443,
             username: "your_username",
             password: "your_password",
+            // vless/vmess 必填
+            uuid: "",
+            // vmess/ss/ss2022 可用（ss2022 请使用 2022-blake3-* 系列 cipher）
+            cipher: "",
+            // vmess 可用
+            alterId: 0,
+            // vless/vmess 可用: tcp / ws / grpc / h2 ...
+            network: "tcp",
             udp: true,
             tls: false,
             skipCertVerify: true,
+            // vless/vmess 可用，映射到 servername
+            sni: "",
+            // vless 可用（如 xtls-rprx-vision）
+            flow: "",
+            // 透传附加字段（如 ws-opts、grpc-opts、reality-opts、plugin、plugin-opts）
+            extra: {},
             dialerProxy: "🇺🇸 家宽前置路由"  // 指向影子策略组
         },
 
@@ -57,6 +72,110 @@ const main = (config) => {
         info: (msg) => console.log(`✅ ${msg}`),
         warn: (msg) => console.log(`⚠️  ${msg}`),
         error: (msg) => console.error(`❌ ${msg}`)
+    };
+
+    const SUPPORTED_TYPES = new Set([
+        "http",
+        "https",
+        "socks5",
+        "vless",
+        "vmess",
+        "ss",
+        "ss2022"
+    ]);
+
+    const isNonEmptyString = (value) => typeof value === "string" && value.trim().length > 0;
+    const isPlainObject = (value) => value && typeof value === "object" && !Array.isArray(value);
+
+    const parsePort = (value) => {
+        const port = Number(value);
+        if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+            throw new Error(`端口无效: ${value}`);
+        }
+        return port;
+    };
+
+    const parseAlterId = (value) => {
+        if (value === undefined || value === null || value === "") return 0;
+        const alterId = Number(value);
+        if (!Number.isInteger(alterId) || alterId < 0) {
+            throw new Error(`alterId 无效: ${value}`);
+        }
+        return alterId;
+    };
+
+    const buildResidentialProxy = (proxyConfig) => {
+        const rawType = String(proxyConfig.type || "http").toLowerCase();
+        if (!SUPPORTED_TYPES.has(rawType)) {
+            throw new Error(`不支持的代理类型: ${rawType}`);
+        }
+
+        if (!isNonEmptyString(proxyConfig.name)) {
+            throw new Error("代理名称不能为空");
+        }
+        if (!isNonEmptyString(proxyConfig.server)) {
+            throw new Error("服务器地址不能为空");
+        }
+
+        const normalizedType = rawType === "ss2022" ? "ss" : rawType;
+        const extra = isPlainObject(proxyConfig.extra) ? proxyConfig.extra : {};
+        const proxy = {
+            ...extra,
+            name: proxyConfig.name,
+            type: normalizedType,
+            server: proxyConfig.server,
+            port: parsePort(proxyConfig.port),
+            udp: proxyConfig.udp !== false,
+            "dialer-proxy": proxyConfig.dialerProxy
+        };
+
+        if (rawType === "http" || rawType === "https" || rawType === "socks5") {
+            if (isNonEmptyString(proxyConfig.username)) proxy.username = proxyConfig.username;
+            if (isNonEmptyString(proxyConfig.password)) proxy.password = proxyConfig.password;
+            proxy.tls = rawType === "https" ? true : proxyConfig.tls === true;
+            proxy["skip-cert-verify"] = proxyConfig.skipCertVerify !== false;
+        }
+
+        if (rawType === "vless") {
+            if (!isNonEmptyString(proxyConfig.uuid)) {
+                throw new Error("vless 协议需要填写 uuid");
+            }
+            proxy.uuid = proxyConfig.uuid;
+            proxy.network = isNonEmptyString(proxyConfig.network) ? proxyConfig.network : "tcp";
+            proxy.tls = proxyConfig.tls === true;
+            proxy["skip-cert-verify"] = proxyConfig.skipCertVerify === true;
+            if (isNonEmptyString(proxyConfig.sni)) proxy.servername = proxyConfig.sni;
+            if (isNonEmptyString(proxyConfig.flow)) proxy.flow = proxyConfig.flow;
+        }
+
+        if (rawType === "vmess") {
+            if (!isNonEmptyString(proxyConfig.uuid)) {
+                throw new Error("vmess 协议需要填写 uuid");
+            }
+            proxy.uuid = proxyConfig.uuid;
+            proxy.alterId = parseAlterId(proxyConfig.alterId);
+            proxy.cipher = isNonEmptyString(proxyConfig.cipher) ? proxyConfig.cipher : "auto";
+            proxy.network = isNonEmptyString(proxyConfig.network) ? proxyConfig.network : "tcp";
+            proxy.tls = proxyConfig.tls === true;
+            proxy["skip-cert-verify"] = proxyConfig.skipCertVerify === true;
+            if (isNonEmptyString(proxyConfig.sni)) proxy.servername = proxyConfig.sni;
+        }
+
+        if (rawType === "ss" || rawType === "ss2022") {
+            if (!isNonEmptyString(proxyConfig.cipher)) {
+                throw new Error(`${rawType} 协议需要填写 cipher`);
+            }
+            if (!isNonEmptyString(proxyConfig.password)) {
+                throw new Error(`${rawType} 协议需要填写 password`);
+            }
+            if (rawType === "ss2022" && !proxyConfig.cipher.startsWith("2022-blake3-")) {
+                throw new Error("ss2022 需要使用 2022-blake3-* 系列 cipher");
+            }
+            proxy.cipher = proxyConfig.cipher;
+            proxy.password = proxyConfig.password;
+        }
+
+        return proxy;
     };
 
     // ================= 数据校验 =================
@@ -150,19 +269,13 @@ const main = (config) => {
     }
 
     // ================= 创建家宽代理节点 =================
-
-    const residentialProxy = {
-        name: CONFIG.residentialProxy.name,
-        type: CONFIG.residentialProxy.type,
-        server: CONFIG.residentialProxy.server,
-        port: CONFIG.residentialProxy.port,
-        username: CONFIG.residentialProxy.username,
-        password: CONFIG.residentialProxy.password,
-        udp: CONFIG.residentialProxy.udp,
-        tls: CONFIG.residentialProxy.tls,
-        "skip-cert-verify": CONFIG.residentialProxy.skipCertVerify,
-        "dialer-proxy": CONFIG.residentialProxy.dialerProxy
-    };
+    let residentialProxy;
+    try {
+        residentialProxy = buildResidentialProxy(CONFIG.residentialProxy);
+    } catch (error) {
+        log.error(`构建家宽代理失败: ${error.message}`);
+        return config;
+    }
 
     // 添加到节点列表开头
     config.proxies.unshift(residentialProxy);

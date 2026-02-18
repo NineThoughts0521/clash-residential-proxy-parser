@@ -36,8 +36,11 @@ tools/config-generator.html
 | 代理名称   | 节点显示名称 | 🏠 美国家宽        |
 | 服务器地址 | IP 或域名    | proxy.example.com |
 | 端口       | 代理端口     | 443               |
+| 协议类型   | http/https/socks5/vless/vmess/ss/ss2022 | ss |
 | 用户名     | 认证用户名   | myusername        |
 | 密码       | 认证密码     | mypassword        |
+
+> 提示：`vless/vmess` 需要填写 `UUID`；`ss/ss2022` 需要填写 `cipher`（`ss2022` 必须使用 `2022-blake3-*`）。
 
 #### 步骤 3：生成脚本
 

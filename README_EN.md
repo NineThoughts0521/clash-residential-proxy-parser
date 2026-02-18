@@ -55,7 +55,7 @@ This project provides a complete toolchain to easily add residential proxy nodes
 
 | Feature                 | Description                                    |
 | ----------------------- | ---------------------------------------------- |
-| 🏠 **Residential Proxy** | Add HTTP/HTTPS/SOCKS5 residential proxy nodes  |
+| 🏠 **Residential Proxy** | Add HTTP/HTTPS/SOCKS5/VLESS/VMess/SS/SS2022 residential proxy nodes |
 | 🔀 **Pre-routing**       | Choose DIRECT or any airport node as pre-route |
 | 🎯 **Smart Groups**      | Auto-add to Proxies, Netflix, AI, etc.         |
 | 🛡️ **Safety**            | Prevent circular references and duplicates     |
@@ -90,6 +90,7 @@ This project provides a complete toolchain to easily add residential proxy nodes
 2. **Fill in Your Proxy Info**
 * Server Address
 * Port
+* Protocol Type (http/https/socks5/vless/vmess/ss/ss2022)
 * Username
 * Password
 

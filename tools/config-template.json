@@ -1,6 +1,6 @@
 {
   "comment": "Clash 家宽代理配置模板 - 修改此文件后可直接生成脚本",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "generatedAt": "2025-01-31",
   
   "proxy": {
@@ -10,6 +10,10 @@
     "port": 443,
     "username": "your_username",
     "password": "your_password",
+    "uuid": "",
+    "cipher": "",
+    "alterId": 0,
+    "network": "tcp",
     "udp": true,
     "tls": false,
     "skipCertVerify": true
@@ -49,6 +53,26 @@
       "port": 443,
       "type": "http"
     },
+    "vless": {
+      "name": "🧬 VLESS 代理",
+      "server": "vless.example.com",
+      "port": 443,
+      "type": "vless",
+      "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "network": "ws",
+      "tls": true
+    },
+    "vmess": {
+      "name": "📶 VMess 代理",
+      "server": "vmess.example.com",
+      "port": 443,
+      "type": "vmess",
+      "uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "cipher": "auto",
+      "alterId": 0,
+      "network": "ws",
+      "tls": true
+    },
     "datacenter": {
       "name": "🏢 数据中心",
       "server": "1.2.3.4",
@@ -60,6 +84,22 @@
       "server": "127.0.0.1",
       "port": 1080,
       "type": "socks5"
+    },
+    "ss": {
+      "name": "🛡️ Shadowsocks",
+      "server": "ss.example.com",
+      "port": 443,
+      "type": "ss",
+      "cipher": "aes-128-gcm",
+      "password": "your_password"
+    },
+    "ss2022": {
+      "name": "🧱 Shadowsocks 2022",
+      "server": "ss2022.example.com",
+      "port": 443,
+      "type": "ss2022",
+      "cipher": "2022-blake3-aes-256-gcm",
+      "password": "your_password"
     }
   },
   

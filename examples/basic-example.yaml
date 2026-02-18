@@ -20,7 +20,7 @@ parsers:
     code: |
       /**
        * Clash 配置文件预处理脚本 - 家宽代理前置路由
-       * 版本: v1.0.0
+       * 版本: v1.1.0
        */
 
       const main = (config) => {
